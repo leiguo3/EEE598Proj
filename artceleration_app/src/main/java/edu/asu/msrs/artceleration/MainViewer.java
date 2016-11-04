@@ -50,7 +50,7 @@ public class MainViewer extends AppCompatActivity {
         status2 = (TextView) findViewById(R.id.statusText2);
         artview = (ArtView) findViewById(R.id.artView);
 
-        artlib = new ArtLib();
+        artlib = new ArtLib(this);
 
         artlib.registerHandler(new TransformHandler() {
             @Override
