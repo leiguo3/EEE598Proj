@@ -16,7 +16,7 @@ public class TestActivity extends AppCompatActivity {
     public static final String BROADCAST_ACTION = "edu.asu.msrs.show_image";
     public static Bitmap sBitmap;
     private ImageView mImageView;
-    private final String TAG = "TestActivity";
+    private static final String TAG = "TestActivity";
 
     public static void startTestActivity(Context context){
         Intent intent = new Intent(context, TestActivity.class);
@@ -24,15 +24,10 @@ public class TestActivity extends AppCompatActivity {
         context.startActivity(intent);
     }
 
-    // Must be called after the Activity started.
-    public static void showImage(Context context, Bitmap bmp){
-        sBitmap = bmp;
-        sendShowImageBroadcast(context);
-    }
-
     private static void sendShowImageBroadcast(Context context){
         Intent intent = new Intent(BROADCAST_ACTION);
         context.sendBroadcast(intent);
+        Log.d(TAG, "Send broadcast!");
     }
 
     @Override
@@ -41,6 +36,8 @@ public class TestActivity extends AppCompatActivity {
         setContentView(R.layout.activity_test);
         mImageView = (ImageView)findViewById(R.id.imageView);
         registerMyReceiver();
+        Log.d(TAG, "onCreate finished!");
+        showImage();
     }
 
     @Override
@@ -64,6 +61,7 @@ public class TestActivity extends AppCompatActivity {
     private void showImage(){
         if(sBitmap != null && !sBitmap.isRecycled()){
             mImageView.setImageBitmap(sBitmap);
+            Log.d(TAG, "Perform show image!");
         }else{
             Log.e(TAG, "Wrong bitmap data!");
         }
@@ -74,6 +72,7 @@ public class TestActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             if(BROADCAST_ACTION.equals(action)){
+                Log.d(TAG, "Receive broadcast!");
                 showImage();
             }
 

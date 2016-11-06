@@ -13,6 +13,7 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
+import android.util.Log;
 
 import java.io.IOException;
 import edu.asu.msrs.artcelerationlibrary.data.Request;
@@ -26,12 +27,13 @@ import edu.asu.msrs.artcelerationlibrary.utils.ShareMemUtil;
  */
 
 public class ArtLibImpl {
-//    public static final String KEY_CALLBACK_MESSENGER = "k_callback_messenger";
+    private final String TAG = "ArtLibImpl";
     private TransformHandler mArtlistener;
     private String[] mTransforms = {"Gaussian Blur", "Neon edges", "Color Filter"};
     private boolean mBound = false;
     private Context mContext;
     private Messenger mRequestMessenger;
+//    private MemoryFile mMf;
 
     ArtLibImpl(Context context){
         mContext = context.getApplicationContext();
@@ -57,17 +59,36 @@ public class ArtLibImpl {
 
     public boolean requestTransform(Bitmap img, int index, int[] intArgs, float[] floatArgs){
         //TODO: data validattion
-        ParcelFileDescriptor pfd = writeImageToShareMem(img);
-        //TODO: data validattion
-        sendMessage(pfd, index, intArgs, floatArgs);
+//        ParcelFileDescriptor pfd = writeImageToShareMem(img);
+//        if(pfd == null){
+//            return false;
+//        }
+//        Log.d(TAG, "ParcelFileDescriptor: " + pfd.toString());
+//        sendMessage(pfd, index, intArgs, floatArgs);
+        sendRequest(img, index, intArgs,floatArgs);
         return true;
+    }
+
+    private void sendRequest(final Bitmap img, final int index, final int[] intArgs, final float[] floatArgs){
+        new Thread(){
+            @Override
+            public void run() {
+                ParcelFileDescriptor pfd = writeImageToShareMem(img);
+                Log.d(TAG, "ParcelFileDescriptor: " + pfd.toString());
+                sendMessage(pfd, index, intArgs, floatArgs);
+            }
+        }.start();
     }
 
     private ParcelFileDescriptor writeImageToShareMem(Bitmap img){
         try {
             final int byteCount = img.getByteCount();
-            MemoryFile mf = new MemoryFile("ashm", byteCount);
-            mf.writeBytes(ShareMemUtil.getBytes(img), 0, 0, byteCount);
+            Log.d(TAG, "image byte count: " + byteCount);
+            byte[] imgData = ShareMemUtil.getBytes(img);
+            int size = imgData.length;
+            Log.d(TAG, "compressed data size: " + size);
+            MemoryFile mf = new MemoryFile("ashm", size);
+            mf.writeBytes(imgData, 0, 0, size);
             return MemoryFileUtil.getParcelFileDescriptor(mf);
         } catch (IOException e) {
             e.printStackTrace();
