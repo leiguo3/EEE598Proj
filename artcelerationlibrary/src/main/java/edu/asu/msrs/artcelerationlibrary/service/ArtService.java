@@ -8,13 +8,15 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
-import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
 import edu.asu.msrs.artcelerationlibrary.data.Request;
 import edu.asu.msrs.artcelerationlibrary.data.Result;
+import edu.asu.msrs.artcelerationlibrary.tasks.Executor;
+import edu.asu.msrs.artcelerationlibrary.tasks.ITaskCallback;
+import edu.asu.msrs.artcelerationlibrary.tasks.TransformTask;
 import edu.asu.msrs.artcelerationlibrary.test.TestActivity;
 import edu.asu.msrs.artcelerationlibrary.utils.ShareMemUtil;
 
@@ -30,6 +32,7 @@ public class ArtService extends Service {
     public static final int COLOR_FILTER = 2;
     private final String TAG = "ArtService";
     private Messenger mCallbackMessenger;
+    private TransformCallback mTransformCallback = new TransformCallback();
 
     private Handler mRequestHandler = new Handler() {
         @Override
@@ -63,10 +66,12 @@ public class ArtService extends Service {
         return Request.create(bundle);
     }
 
-    private void sendCallback(ParcelFileDescriptor pfd){
+    private void sendCallback(Request request){
         if(mCallbackMessenger != null){
             Result result = new Result();
-            result.setParcelFileDescriptor(pfd);
+            result.setParcelFileDescriptor(request.getParcelFileDescriptor());
+            result.setWidth(request.getWidth());
+            result.setHeight(request.getHeight());
             Message msg = Message.obtain();
             msg.setData(result.writeToBundle());
             try {
@@ -95,6 +100,15 @@ public class ArtService extends Service {
     }
 
     private void handleRequest(Request request){
-        parseBitmap(request);
+        Executor.performTransform(request, mTransformCallback);
     }
+
+    private class TransformCallback implements ITaskCallback<TransformTask>{
+        @Override
+        public void onTaskFinished(TransformTask task) {
+            Request request = task.getRequest();
+            sendCallback(request);
+        }
+    }
+
 }

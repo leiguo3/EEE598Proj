@@ -144,6 +144,13 @@ public class ArtLibImpl {
         public void handleMessage(Message msg) {
             //TODO: handle callback
             Result result = Result.create(msg.getData());
+            // The bitmap after transform
+            Bitmap bmp = ShareMemUtil.createBitmapFromPfd(result.getParcelFileDescriptor(), result.getWidth(), result.getHeight());
+            if(mArtlistener != null && bmp != null && !bmp.isRecycled()){
+                mArtlistener.onTransformProcessed(bmp);
+            }else{
+                Log.e(TAG, "Error found, no callback!");
+            }
         }
     };
     private Messenger mCallbackMessenger = new Messenger(mCallbackHandler);
