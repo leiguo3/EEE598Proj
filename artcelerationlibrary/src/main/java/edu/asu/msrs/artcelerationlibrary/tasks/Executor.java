@@ -2,7 +2,7 @@ package edu.asu.msrs.artcelerationlibrary.tasks;
 
 import edu.asu.msrs.artcelerationlibrary.data.Request;
 import edu.asu.msrs.artcelerationlibrary.tasks.schedule.FIFOTask;
-import edu.asu.msrs.artcelerationlibrary.tasks.schedule.FIFOThreadPool;
+import edu.asu.msrs.artcelerationlibrary.tasks.schedule.FIFOTaskExecutor;
 
 /**
  * Created by Lei on 11/6/2016.
@@ -16,7 +16,7 @@ public class Executor {
     }
 
     private static void execute(FIFOTask task) {
-        FIFOThreadPool.getExecutor().execute(task);
+        FIFOTaskExecutor.getExecutor().execute(task);
     }
 
 }

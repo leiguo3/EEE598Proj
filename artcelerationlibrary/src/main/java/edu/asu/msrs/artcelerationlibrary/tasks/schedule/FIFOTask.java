@@ -16,7 +16,7 @@ public class FIFOTask implements Runnable{
     @Override
     final public void run() {
         runOnBackgroundThread();
-        FIFOThreadPool.getExecutor().onTaskFinished(this);
+        FIFOTaskExecutor.getExecutor().onTaskFinished(this);
     }
 
     protected void runOnBackgroundThread(){

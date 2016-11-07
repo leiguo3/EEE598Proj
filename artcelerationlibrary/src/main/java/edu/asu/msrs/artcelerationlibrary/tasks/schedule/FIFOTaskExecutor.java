@@ -12,26 +12,26 @@ import java.util.Set;
  * Created by Lei on 11/6/2016.
  */
 
-public class FIFOThreadPool {
-    private static FIFOThreadPool sFIFOThreadPool;
+public class FIFOTaskExecutor {
+    private static FIFOTaskExecutor sFIFOTaskExecutor;
     private Queue<FIFOTask> requests = new LinkedList<>();
     private Set<FIFOTask> requestSet = new HashSet<>();
     private ThreadPool mThreadPool;
     // Used to post task from background thread to main thread.
     private Handler mHandler = new Handler();
 
-    public static FIFOThreadPool getExecutor() {
-        if (sFIFOThreadPool == null) {
-            synchronized (FIFOThreadPool.class) {
-                if (sFIFOThreadPool == null) {
-                    sFIFOThreadPool = new FIFOThreadPool();
+    public static FIFOTaskExecutor getExecutor() {
+        if (sFIFOTaskExecutor == null) {
+            synchronized (FIFOTaskExecutor.class) {
+                if (sFIFOTaskExecutor == null) {
+                    sFIFOTaskExecutor = new FIFOTaskExecutor();
                 }
             }
         }
-        return sFIFOThreadPool;
+        return sFIFOTaskExecutor;
     }
 
-    private FIFOThreadPool() {
+    private FIFOTaskExecutor() {
         mThreadPool = new ThreadPool();
     }
 
