@@ -20,6 +20,7 @@ import edu.asu.msrs.artcelerationlibrary.data.Request;
 import edu.asu.msrs.artcelerationlibrary.data.Result;
 import edu.asu.msrs.artcelerationlibrary.service.ArtService;
 import edu.asu.msrs.artcelerationlibrary.utils.MemoryFileUtil;
+import edu.asu.msrs.artcelerationlibrary.utils.ParamsVerifyUtil;
 import edu.asu.msrs.artcelerationlibrary.utils.ShareMemUtil;
 
 /**
@@ -33,7 +34,6 @@ public class ArtLibImpl {
     private boolean mBound = false;
     private Context mContext;
     private Messenger mRequestMessenger;
-//    private MemoryFile mMf;
 
     ArtLibImpl(Context context){
         mContext = context.getApplicationContext();
@@ -48,8 +48,10 @@ public class ArtLibImpl {
         TransformTest[] transforms = new TransformTest[3];
         transforms[0]=new TransformTest(0, new int[]{1,2,3}, new float[]{0.1f, 0.2f, 0.3f});
         transforms[1]=new TransformTest(1, new int[]{11,22,33}, new float[]{0.3f, 0.2f, 0.3f});
-        transforms[2]=new TransformTest(2, new int[]{51,42,33}, new float[]{0.5f, 0.6f, 0.3f});
-
+        transforms[2]=new TransformTest(2,
+                new int[]{33, 25, 208, 72, 231, 140, 233, 162, 41,
+                37, 245, 124, 247, 205, 248, 245, 108, 10, 203, 168, 234,
+                217, 245, 239,}, new float[]{0.5f, 0.6f, 0.3f});
         return transforms;
     }
 
@@ -58,35 +60,55 @@ public class ArtLibImpl {
     }
 
     public boolean requestTransform(Bitmap img, int index, int[] intArgs, float[] floatArgs){
-        //TODO: data validattion
-//        ParcelFileDescriptor pfd = writeImageToShareMem(img);
-//        if(pfd == null){
-//            return false;
-//        }
-//        Log.d(TAG, "ParcelFileDescriptor: " + pfd.toString());
-//        sendMessage(pfd, index, intArgs, floatArgs);
+        if(img == null || img.isRecycled()){
+            return false;
+        }
+        if(index < 0 || index > mTransforms.length - 1){
+            return false;
+        }
+        if(!verifyArgs(index, intArgs, floatArgs)){
+            return false;
+        }
         sendRequest(img, index, intArgs,floatArgs);
         return true;
     }
 
+    private boolean verifyArgs(int type, int[] intArgs, float[] floatArgs){
+        switch (type){
+            case ArtService.COLOR_FILTER:
+                return ParamsVerifyUtil.verifyColorFilterParams(intArgs);
+            case ArtService.GAUSSIAN_BLUR:
+                break;
+            case ArtService.NEON_EDGES:
+                break;
+            default:
+                return false;
+        }
+        return true;
+    }
+
     private void sendRequest(final Bitmap img, final int index, final int[] intArgs, final float[] floatArgs){
+        // TODO: make sure messages send in order.
+        // TODO: Use thread pool to improve performance.
         new Thread(){
             @Override
             public void run() {
                 ParcelFileDescriptor pfd = writeImageToShareMem(img);
                 Log.d(TAG, "ParcelFileDescriptor: " + pfd.toString());
-                sendMessage(pfd, index, intArgs, floatArgs);
+                sendMessage(pfd, img.getWidth(), img.getHeight(), index, intArgs, floatArgs);
             }
         }.start();
     }
 
     private ParcelFileDescriptor writeImageToShareMem(Bitmap img){
         try {
-            final int byteCount = img.getByteCount();
+            // TODO: remove test code
+            int byteCount = img.getByteCount();
             Log.d(TAG, "image byte count: " + byteCount);
+            // Above code for test
+
             byte[] imgData = ShareMemUtil.getBytes(img);
             int size = imgData.length;
-            Log.d(TAG, "compressed data size: " + size);
             MemoryFile mf = new MemoryFile("ashm", size);
             mf.writeBytes(imgData, 0, 0, size);
             return MemoryFileUtil.getParcelFileDescriptor(mf);
@@ -96,11 +118,14 @@ public class ArtLibImpl {
         return null;
     }
 
-    private void sendMessage(ParcelFileDescriptor pfd, int index, int[] intArgs, float[] floatArgs){
+    private void sendMessage(ParcelFileDescriptor pfd, int width, int height, int index, int[] intArgs, float[] floatArgs){
         if(mBound){
-            Message msg = Message.obtain(null, index, 0, 0);
+            Message msg = Message.obtain(null, ArtService.TRANSFORM_REQUEST, 0, 0);
             Request request = new Request();
+            request.setTransformType(index);
             request.setParcelFileDescriptor(pfd);
+            request.setWidth(width);
+            request.setHeight(height);
             request.setIntArgs(intArgs);
             request.setFloatArgs(floatArgs);
             msg.setData(request.writeToBundle());
@@ -143,6 +168,9 @@ public class ArtLibImpl {
         mContext.bindService(intent, mConnection, Service.BIND_AUTO_CREATE);
     }
 
+    /**
+     * Pass a callback Messenger to the Service, so it can call the client when the transform is finished.
+     */
     private void passCallbackMessenger(){
         Message msg = Message.obtain(null, ArtService.PASS_CALLBACK_MESSENGER, 0, 0);
         // Support after android.os.Build.VERSION_CODES#FROYO release

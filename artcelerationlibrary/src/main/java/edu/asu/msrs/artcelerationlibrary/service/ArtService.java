@@ -3,7 +3,6 @@ package edu.asu.msrs.artcelerationlibrary.service;
 import android.app.Service;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -17,12 +16,14 @@ import android.util.Log;
 import edu.asu.msrs.artcelerationlibrary.data.Request;
 import edu.asu.msrs.artcelerationlibrary.data.Result;
 import edu.asu.msrs.artcelerationlibrary.test.TestActivity;
+import edu.asu.msrs.artcelerationlibrary.utils.ShareMemUtil;
 
 /**
  * Created by Lei on 11/3/2016.
  */
 
 public class ArtService extends Service {
+    public static final int TRANSFORM_REQUEST = -2;
     public static final int PASS_CALLBACK_MESSENGER = -1;
     public static final int GAUSSIAN_BLUR = 0;
     public static final int NEON_EDGES = 1;
@@ -33,23 +34,11 @@ public class ArtService extends Service {
     private Handler mRequestHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-            Request request;
-            Bitmap bmp;
             switch (msg.what) {
-                case GAUSSIAN_BLUR:
-                    // handle Gaussian blur request
-                    request = parseRequest(msg);
-                    bmp = parseBitmap(request.getParcelFileDescriptor());
-                    break;
-                case NEON_EDGES:
-                    // handle Neon edges request
-                    request = parseRequest(msg);
-                    bmp = parseBitmap(request.getParcelFileDescriptor());
-                    break;
-                case COLOR_FILTER:
-                    // handle Color filter request
-                    request = parseRequest(msg);
-                    bmp = parseBitmap(request.getParcelFileDescriptor());
+                case TRANSFORM_REQUEST:
+                    // hanlde transform request
+                    Request request = parseRequest(msg);
+                    handleRequest(request);
                     break;
                 case PASS_CALLBACK_MESSENGER:
                     // bind callback messenger
@@ -90,15 +79,22 @@ public class ArtService extends Service {
         }
     }
 
-    private Bitmap parseBitmap(ParcelFileDescriptor pfd){
-        Bitmap bmp = BitmapFactory.decodeFileDescriptor(pfd.getFileDescriptor());
-
+    private Bitmap parseBitmap(Request request){
+        Bitmap bmp = ShareMemUtil.createBitmapFromPfd(request.getParcelFileDescriptor(), request.getWidth(), request.getHeight());
         //TODO: Remove Test Code
+        if(bmp == null){
+            Log.e(TAG, "Bitmap parsed is null!");
+            return null;
+        }
         int byteCount = bmp.getByteCount();
         Log.e(TAG, "parse bitmap byte count: " + byteCount);
         Log.d(TAG, "bmp width " + bmp.getWidth() + "  , height: " + bmp.getHeight());
         TestActivity.sBitmap = bmp;
         TestActivity.startTestActivity(getApplicationContext());
         return bmp;
+    }
+
+    private void handleRequest(Request request){
+        parseBitmap(request);
     }
 }
