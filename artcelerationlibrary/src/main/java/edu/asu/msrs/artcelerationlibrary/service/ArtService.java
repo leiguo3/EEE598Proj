@@ -108,6 +108,8 @@ public class ArtService extends Service {
         public void onTaskFinished(TransformTask task) {
             Request request = task.getRequest();
             sendCallback(request);
+            // TODO: remove test code
+//            parseBitmap(request);
         }
     }
 

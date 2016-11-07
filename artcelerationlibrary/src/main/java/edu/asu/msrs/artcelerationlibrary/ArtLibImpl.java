@@ -18,6 +18,7 @@ import android.util.Log;
 import java.io.IOException;
 import edu.asu.msrs.artcelerationlibrary.data.Request;
 import edu.asu.msrs.artcelerationlibrary.data.Result;
+import edu.asu.msrs.artcelerationlibrary.graphics.Transform;
 import edu.asu.msrs.artcelerationlibrary.service.ArtService;
 import edu.asu.msrs.artcelerationlibrary.utils.MemoryFileUtil;
 import edu.asu.msrs.artcelerationlibrary.utils.ParamsVerifyUtil;
@@ -105,6 +106,8 @@ public class ArtLibImpl {
             // TODO: remove test code
             int byteCount = img.getByteCount();
             Log.d(TAG, "image byte count: " + byteCount);
+//            Log.d(TAG, "Is pixels premultiplied: " + img.isPremultiplied());
+//            Transform.outputPixels(img);
             // Above code for test
 
             byte[] imgData = ShareMemUtil.getBytes(img);
