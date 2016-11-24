@@ -49,9 +49,9 @@ public class TransformTask extends FIFOTask {
         byte[] newPixels = null;
         switch (request.getTransformType()){
             case ArtService.GAUSSIAN_BLUR:
-                // TODO: add transform
-                // Do nothing
-                newPixels = pixels;
+                long st = System.currentTimeMillis();
+                newPixels = Transform.gaussianBlur(pixels, request.getWidth(), request.getHeight(), request.getIntArgs(), request.getFloatArgs());
+                Log.e(TAG, "Gaussian blur, consume: " + (System.currentTimeMillis() - st));
                 break;
             case ArtService.NEON_EDGES:
                 // TODO: add transform
@@ -59,7 +59,9 @@ public class TransformTask extends FIFOTask {
                 newPixels = pixels;
                 break;
             case ArtService.COLOR_FILTER:
-                newPixels = Transform.colorFilter(request.getIntArgs(), pixels);
+                long startTime = System.currentTimeMillis();
+                newPixels = Transform.colorFilter(pixels, request.getIntArgs());
+                Log.e(TAG, "C++ color filter finish, consume: " + (System.currentTimeMillis() - startTime));
                 break;
         }
         ParcelFileDescriptor pfd = ShareMemUtil.writeDataToAshm(newPixels);

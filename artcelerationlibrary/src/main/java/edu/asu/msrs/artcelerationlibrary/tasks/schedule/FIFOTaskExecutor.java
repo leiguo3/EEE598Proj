@@ -17,7 +17,8 @@ public class FIFOTaskExecutor {
     private Queue<FIFOTask> requests = new LinkedList<>();
     private Set<FIFOTask> requestSet = new HashSet<>();
     private ThreadPool mThreadPool;
-    // Used to post task from background thread to main thread.
+    // Used to post task from background thread to the thread on which the FIFOTaskExecutor instance is created.
+    // We operate the task Queue on a single thread. It can be the Main thread or any other thread which has a Looper.
     private Handler mHandler = new Handler();
 
     public static FIFOTaskExecutor getExecutor() {
@@ -42,6 +43,7 @@ public class FIFOTaskExecutor {
 
     // This function run on background thread.
     public void onTaskFinished(final FIFOTask task) {
+        // post to the thread on which we operate the task Queue.
         mHandler.post(new Runnable() {
             @Override
             public void run() {
