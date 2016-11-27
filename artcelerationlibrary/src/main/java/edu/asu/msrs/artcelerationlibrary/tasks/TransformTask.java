@@ -47,6 +47,7 @@ public class TransformTask extends FIFOTask {
         Log.d(TAG, "Request type: " + request.getTransformType());
         byte[] pixels =ShareMemUtil.getBytesFromPfd(request.getParcelFileDescriptor()).array();
         byte[] newPixels = null;
+        // TODO: remove performance test code.
         switch (request.getTransformType()){
             case ArtService.GAUSSIAN_BLUR:
                 long st = System.currentTimeMillis();
@@ -62,6 +63,11 @@ public class TransformTask extends FIFOTask {
                 long startTime = System.currentTimeMillis();
                 newPixels = Transform.colorFilter(pixels, request.getIntArgs());
                 Log.e(TAG, "C++ color filter finish, consume: " + (System.currentTimeMillis() - startTime));
+                break;
+            case ArtService.MOTION_BLUR:
+                startTime = System.currentTimeMillis();
+                newPixels = Transform.motionBlur(pixels, request.getWidth(), request.getHeight(), request.getIntArgs());
+                Log.e(TAG, "Motion blur finish, consume: " + (System.currentTimeMillis() - startTime));
                 break;
         }
         ParcelFileDescriptor pfd = ShareMemUtil.writeDataToAshm(newPixels);

@@ -20,4 +20,17 @@ public class ParamsVerifyUtil {
         }
         return true;
     }
+
+    public static boolean verifyMotionBlurParams(int[] intArgs){
+        if (intArgs == null || intArgs.length != 2) {
+            return false;
+        }
+        if(intArgs[0] != 0 && intArgs[0] != 1){
+            return false;
+        }
+        if(intArgs[1] < 0){
+            return false;
+        }
+        return true;
+    }
 }

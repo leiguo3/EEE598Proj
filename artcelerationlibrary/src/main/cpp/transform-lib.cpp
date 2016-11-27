@@ -24,19 +24,19 @@ Java_edu_asu_msrs_artcelerationlibrary_graphics_Transform_nativeColorFilter(
     jbyte *colorMapsG = new jbyte[256];
     jbyte *colorMapsB = new jbyte[256];
     for (int i = 0; i < 256; i++) {
-        colorMapsR[i] = transformOneColor(i, args, 0);
-        colorMapsG[i] = transformOneColor(i, args, 8);
-        colorMapsB[i] = transformOneColor(i, args, 16);
+        colorMapsR[i] = (jbyte)transformOneColor(i, args, 0);
+        colorMapsG[i] = (jbyte)transformOneColor(i, args, 8);
+        colorMapsB[i] = (jbyte)transformOneColor(i, args, 16);
     }
     for (int i = 0; i < length; i += 4) {
         // Note: the data order is rgba in the pixels array.
         // Also, the data range is [-128, 127], we need to translate it to [0, 255] before do the transform.
         // transform R
-        pixels[i] = colorMapsR[pixels[i] + 128];
+        pixels[i] = colorMapsR[pixels[i] & 0xFF];
         // transform G
-        pixels[i + 1] = colorMapsG[pixels[i + 1] + 128];
+        pixels[i + 1] = colorMapsG[pixels[i + 1] & 0xFF];
         // transform B
-        pixels[i + 2] = colorMapsB[pixels[i + 2] + 128];
+        pixels[i + 2] = colorMapsB[pixels[i + 2] & 0xFF];
     }
     env->SetByteArrayRegion(initialPixels, 0, length, pixels);
     env->ReleaseByteArrayElements(initialPixels, pixels, 0);
@@ -46,11 +46,11 @@ Java_edu_asu_msrs_artcelerationlibrary_graphics_Transform_nativeColorFilter(
 
 /**
  * b - brightness of a color, the value in [0, 255]
- * return value is in [-128, 127]
+ * return value is in [0, 255]
  */
 int transformOneColor(int b, int *intArgs, int offset) {
     if (b == 0 || b == 255) {
-        return b - 128;
+        return b;
     }
     int x1, y1, x2, y2;
     x1 = y1 = x2 = y2 = 0;
@@ -83,7 +83,6 @@ int transformOneColor(int b, int *intArgs, int offset) {
     if (result > 255) {
         result = 255;
     }
-    result -= 128;
     return result;
 }
 

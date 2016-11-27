@@ -32,7 +32,7 @@ import edu.asu.msrs.artcelerationlibrary.utils.ShareMemUtil;
 public class ArtLibImpl {
     private final String TAG = "ArtLibImpl";
     private TransformHandler mArtlistener;
-    private String[] mTransforms = {"Gaussian Blur", "Neon edges", "Color Filter"};
+    private String[] mTransforms = {"Gaussian Blur", "Neon edges", "Color Filter", "Motion Blur"};
     private boolean mBound = false;
     private Context mContext;
     private Messenger mRequestMessenger;
@@ -47,13 +47,14 @@ public class ArtLibImpl {
     }
 
     public TransformTest[] getTestsArray() {
-        TransformTest[] transforms = new TransformTest[3];
-        transforms[0] = new TransformTest(0, new int[]{3}, new float[]{3.0f});
+        TransformTest[] transforms = new TransformTest[4];
+        transforms[0] = new TransformTest(0, new int[]{5}, new float[]{3.0f});
         transforms[1] = new TransformTest(1, new int[]{11, 22, 33}, new float[]{0.3f, 0.2f, 0.3f});
         transforms[2] = new TransformTest(2,
                 new int[]{33, 25, 208, 72, 231, 140, 233, 162, 41,
                         37, 245, 124, 247, 205, 248, 245, 108, 10, 203, 168, 234,
                         217, 245, 239,}, new float[]{0.5f, 0.6f, 0.3f});
+        transforms[3] = new TransformTest(3, new int[]{0, 10}, new float[]{});
         return transforms;
     }
 
@@ -83,6 +84,8 @@ public class ArtLibImpl {
                 break;
             case ArtService.NEON_EDGES:
                 break;
+            case ArtService.MOTION_BLUR:
+                return ParamsVerifyUtil.verifyMotionBlurParams(intArgs);
             default:
                 return false;
         }

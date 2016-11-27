@@ -30,6 +30,7 @@ public class ArtService extends Service {
     public static final int GAUSSIAN_BLUR = 0;
     public static final int NEON_EDGES = 1;
     public static final int COLOR_FILTER = 2;
+    public static final int MOTION_BLUR = 3;
     private final String TAG = "ArtService";
     private Messenger mCallbackMessenger;
     private TransformCallback mTransformCallback = new TransformCallback();

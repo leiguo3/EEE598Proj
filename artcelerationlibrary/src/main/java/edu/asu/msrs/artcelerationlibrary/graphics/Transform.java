@@ -25,10 +25,63 @@ public class Transform {
         return nativeColorFilter(pixels, intArgs);
     }
 
+    public static byte[] motionBlur(byte[] pixels, int imgW, int imgH, int[] intArgs) {
+        byte[][] redArray = copyOneColorFromOrigin(pixels, imgW, imgH, 0);
+        byte[][] greenArray = copyOneColorFromOrigin(pixels, imgW, imgH, 1);
+        byte[][] blueArray = copyOneColorFromOrigin(pixels, imgW, imgH, 2);
+//        byte[][] alphaArray = copyOneColorFromOrigin(pixels, imgW, imgH, 3);
+        final int orientation = intArgs[0];
+        final int radius = intArgs[1];
+        redArray = motionBlurOneColor(redArray, imgW, imgH, orientation, radius);
+        greenArray = motionBlurOneColor(greenArray, imgW, imgH, orientation, radius);
+        blueArray = motionBlurOneColor(blueArray, imgW, imgH, orientation, radius);
+//        alphaArray = motionBlurOneColor(alphaArray, imgW, imgH, orientation, radius);
+        copyOneColorToOrigin(redArray, pixels, imgW, imgH, 0);
+        copyOneColorToOrigin(greenArray, pixels, imgW, imgH, 1);
+        copyOneColorToOrigin(blueArray, pixels, imgW, imgH, 2);
+        return pixels;
+    }
+
+    private static byte[][] motionBlurOneColor(byte[][] pixels, int imgW, int imgH, int orientation, int radius) {
+        byte[][] newPixels = new byte[imgW][imgH];
+        int count = 2 * radius + 1;
+        for (int i = 0; i < imgW; i++) {
+            for (int j = 0; j < imgH; j++) {
+                int pixel = 0;
+                int index;
+                if (orientation == 0) {
+                    // horizontal blur
+                    for (int k = -radius; k <= radius; k++) {
+                        index = i + k;
+                        if (index >= 0 && index < imgW) {
+                            pixel += pixels[index][j] & 0xFF;
+                        }
+                    }
+                } else {
+                    // vertical blur
+                    for (int k = -radius; k <= radius; k++) {
+                        index = j + k;
+                        if (index >= 0 && index < imgH) {
+                            pixel += pixels[i][index] & 0xFF;
+                        }
+                    }
+                }
+                int newPixel = pixel / count;
+                if(newPixel < 0){
+                    newPixel = 0;
+                }
+                if(newPixel > 255){
+                    newPixel = 255;
+                }
+                newPixels[i][j] = (byte)newPixel;
+            }
+        }
+        return newPixels;
+    }
+
     public static byte[] gaussianBlur(byte[] pixels, int imgW, int imgH, int[] intArgs, float[] floatArgs) {
         final int radius = intArgs[0];
         final float delta = floatArgs[0];
-//        final int length = pixels.length;
         final int vectorLen = 2 * radius + 1;
         double[] gaussVector = new double[vectorLen];
         double total = 0;
@@ -45,79 +98,6 @@ public class Transform {
             gaussBlurOneColor(pixels, imgW, imgH, i, gaussVector, radius);
         }
 
-//        int[][] midPixels = new int[imgW][imgH];
-//        int[][] finalPixels = new int[imgW][imgH];
-//        int pixel, startIndex;
-        // convert byte pixels to int pixels
-//        for (int y = 0; y < imgH; y++) {
-//            for (int x = 0; x < imgW; x++) {
-//                startIndex = (y * imgW + x) * 4;
-//                pixel = pixels[startIndex];
-//                pixel = (pixel << 8) + pixels[startIndex + 1];
-//                pixel = (pixel << 8) + pixels[startIndex + 2];
-//                pixel = (pixel << 8) + pixels[startIndex + 3];
-//                finalPixels[x][y] = pixel;
-//            }
-//        }
-//        Bitmap bmp = Bitmap.createBitmap(imgW, imgH, Bitmap.Config.ARGB_8888);
-//        bmp.copyPixelsFromBuffer(ByteBuffer.wrap(pixels));
-//        int[] intPixels = new int[pixels.length / 4];
-//        bmp.getPixels(intPixels, 0, imgW, 0, 0, imgW, imgH);
-//        for (int y = 0; y < imgH; y++) {
-//            for (int x = 0; x < imgW; x++) {
-//                finalPixels[x][y] = intPixels[y * imgW + x];
-//            }
-//        }
-
-//        int p;
-//        // x index;
-//        int xi;
-//        for (int x = 0; x < imgW; x++) {
-//            for (int y = 0; y < imgH; y++) {
-//                p = 0;
-//                for (int i = 0; i < vectorLen; i++) {
-//                    xi = x + i - radius;
-//                    if (xi >= 0 && xi < imgW) {
-//                        p += gaussVector[i] * finalPixels[xi][y];
-//                    }
-//                }
-//                midPixels[x][y] = p;
-//            }
-//        }
-//        // y index
-//        int yi;
-//        for (int x = 0; x < imgW; x++) {
-//            for (int y = 0; y < imgH; y++) {
-//                p = 0;
-//                for (int i = 0; i < vectorLen; i++) {
-//                    yi = y + i - radius;
-//                    if (yi >= 0 && yi < imgH) {
-//                        p += gaussVector[i] * midPixels[x][yi];
-//                    }
-//                }
-//                finalPixels[x][y] = p;
-//            }
-//        }
-        //  convert int pixels to byte pixels
-//        for (int y = 0; y < imgH; y++) {
-//            for (int x = 0; x < imgW; x++) {
-//                pixel = finalPixels[x][y];
-//                startIndex = (y * imgW + x) * 4;
-//                pixels[startIndex] = (byte) (pixel >> 24 & 0xFF);
-//                pixels[startIndex + 1] = (byte) (pixel >> 16 & 0xFF);
-//                pixels[startIndex + 2] = (byte) (pixel >> 8 & 0xFF);
-//                pixels[startIndex + 3] = (byte) (pixel & 0xFF);
-//            }
-//        }
-//        for (int y = 0; y < imgH; y++) {
-//            for (int x = 0; x < imgW; x++) {
-//                intPixels[y * imgW + x] = finalPixels[x][y];
-//            }
-//        }
-//        bmp.setPixels(intPixels, 0, imgW, 0, 0, imgW, imgH);
-//        ByteBuffer bb = ByteBuffer.allocate(pixels.length);
-//        bmp.copyPixelsToBuffer(bb);
-//        pixels = bb.array();
         return pixels;
     }
 
@@ -157,7 +137,8 @@ public class Transform {
         // orientation: 0 = horizontal, other = vertical
         byte[][] result = new byte[imgW][imgH];
         int vectorLen = gaussVector.length;
-        byte p;
+        int pixel;
+        double p;
         if (orientation == 0) {
             // horizontal
             // x index;
@@ -168,10 +149,17 @@ public class Transform {
                     for (int i = 0; i < vectorLen; i++) {
                         xi = x + i - radius;
                         if (xi >= 0 && xi < imgW) {
-                            p += gaussVector[i] * pixels[xi][y];
+                            p += gaussVector[i] * (pixels[xi][y] & 0xFF);
                         }
                     }
-                    result[x][y] = p;
+                    pixel = (int)p;
+                    if(pixel < 0){
+                        pixel = 0;
+                    }
+                    if(pixel > 255){
+                        pixel = 255;
+                    }
+                    result[x][y] = (byte)p;
                 }
             }
         } else {
@@ -184,29 +172,21 @@ public class Transform {
                     for (int i = 0; i < vectorLen; i++) {
                         yi = y + i - radius;
                         if (yi >= 0 && yi < imgH) {
-                            p += gaussVector[i] * pixels[x][yi];
+                            p += gaussVector[i] * (pixels[x][yi] & 0xFF);
                         }
                     }
-                    result[x][y] = p;
+                    pixel = (int)p;
+                    if(pixel < 0){
+                        pixel = 0;
+                    }
+                    if(pixel > 255){
+                        pixel = 255;
+                    }
+                    result[x][y] = (byte)pixel;
                 }
             }
         }
         return result;
     }
-
-//    public static void outputPixels(Bitmap bmp) {
-//        for (int i = 0; i < 20; i++) {
-//            int color = bmp.getPixel(i, 0);
-//            int alpha = (color >> 24) & 0xff;
-//            int r = (color >> 16) & 0xff;
-//            int g = (color >> 8) & 0xff;
-//            int b = color & 0xff;
-//            Log.e("BMP", "read from bmp data alpha: " + alpha);
-//            Log.e("BMP", "read from bmp data r: " + r);
-//            Log.e("BMP", "read from bmp data g: " + g);
-//            Log.e("BMP", "read from bmp data b: " + b);
-//
-//        }
-//    }
 
 }
