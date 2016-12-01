@@ -54,10 +54,10 @@ public class TransformTask extends FIFOTask {
                 newPixels = Transform.gaussianBlur(pixels, request.getWidth(), request.getHeight(), request.getIntArgs(), request.getFloatArgs());
                 Log.e(TAG, "Gaussian blur, consume: " + (System.currentTimeMillis() - st));
                 break;
-            case ArtService.NEON_EDGES:
+            case ArtService.ASCII_ART:
                 // TODO: add transform
                 // Do nothing
-                newPixels = pixels;
+                newPixels = Transform.asciiArt(pixels, request.getWidth(), request.getHeight());
                 break;
             case ArtService.COLOR_FILTER:
                 long startTime = System.currentTimeMillis();

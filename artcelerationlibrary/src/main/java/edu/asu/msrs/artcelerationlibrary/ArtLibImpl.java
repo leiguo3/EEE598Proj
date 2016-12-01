@@ -10,7 +10,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
-import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import android.util.Log;
 
@@ -21,9 +20,7 @@ import edu.asu.msrs.artcelerationlibrary.tasks.Executor;
 import edu.asu.msrs.artcelerationlibrary.tasks.ITaskCallback;
 import edu.asu.msrs.artcelerationlibrary.tasks.RequestTask;
 import edu.asu.msrs.artcelerationlibrary.tasks.ResultTask;
-import edu.asu.msrs.artcelerationlibrary.tasks.schedule.FIFOTask;
 import edu.asu.msrs.artcelerationlibrary.utils.ParamsVerifyUtil;
-import edu.asu.msrs.artcelerationlibrary.utils.ShareMemUtil;
 
 /**
  * Created by Lei on 11/3/2016.
@@ -32,7 +29,7 @@ import edu.asu.msrs.artcelerationlibrary.utils.ShareMemUtil;
 public class ArtLibImpl {
     private final String TAG = "ArtLibImpl";
     private TransformHandler mArtlistener;
-    private String[] mTransforms = {"Gaussian Blur", "Neon edges", "Color Filter", "Motion Blur"};
+    private String[] mTransforms = {"Gaussian Blur", "Ascii Art", "Color Filter", "Motion Blur"};
     private boolean mBound = false;
     private Context mContext;
     private Messenger mRequestMessenger;
@@ -81,8 +78,11 @@ public class ArtLibImpl {
             case ArtService.COLOR_FILTER:
                 return ParamsVerifyUtil.verifyColorFilterParams(intArgs);
             case ArtService.GAUSSIAN_BLUR:
+                // TODO: verify Gaussian blur params here
                 break;
-            case ArtService.NEON_EDGES:
+            case ArtService.ASCII_ART:
+                // No need to verify params here.
+                // Ascii Art only use the Bitmap and the transform index which are already verified.
                 break;
             case ArtService.MOTION_BLUR:
                 return ParamsVerifyUtil.verifyMotionBlurParams(intArgs);
