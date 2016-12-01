@@ -1,5 +1,14 @@
 package edu.asu.msrs.artcelerationlibrary.graphics;
 
+import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+
+import edu.asu.msrs.artcelerationlibrary.R;
+import edu.asu.msrs.artcelerationlibrary.service.ArtService;
+import edu.asu.msrs.artcelerationlibrary.utils.Utils;
+
 /**
  * Created by Lei on 11/7/2016.
  */
@@ -47,6 +56,40 @@ public class Transform {
         convert2DTo1D(twoDPixels, pixels, width, imgH);
         return pixels;
     }
+
+    public static byte[] asciiArt(byte[] pixels, int imgW, int imgH){
+        // Get the context which is used to create Bitmaps from drawables
+        Context context = ArtService.getContext();
+        if (context != null) {
+            // The number of char images
+            final int charCount = 36;
+            // The format of ids for char drawables
+            final String mCharId = "char%d";
+            // Bitmap characters resource Ids.
+            final Bitmap[] charBitmaps = new Bitmap[charCount];
+            // We use ARGB_8888 to create Bitmaps, each pixel take 32 bits
+            BitmapFactory.Options opts = new BitmapFactory.Options();
+            Resources res = context.getResources();
+            opts.inPreferredConfig = Bitmap.Config.ARGB_8888;
+            // Read each images and convert them to Bitmap
+            for(int i = 0; i < charCount; i++){
+                String resName = String.format(mCharId, i);
+                int resId = Utils.getResId(resName, R.drawable.class);
+                Bitmap bmp = BitmapFactory.decodeResource(res, resId, opts);
+                charBitmaps[i] = bmp;
+            }
+            // TODO: Now we have 36 Bitmap objects in the array of 'charBitmaps'
+            // TODO: We can get their pixels with ShareMemUtil.getBytes(bmp) which will give us a byte array of pixel
+
+            // TODO: return the transformed byte array of pixels
+            return null;
+        } else {
+            // Return the original pixels if can't get the context here
+            // This won't happen if this method is called in the Service.
+            return pixels;
+        }
+    }
+
 
     private static byte[][] convert1DTo2D(byte[] pixels, int width, int imgH) {
         byte[][] result = new byte[width][imgH];

@@ -1,6 +1,7 @@
 package edu.asu.msrs.artcelerationlibrary.service;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -31,9 +32,26 @@ public class ArtService extends Service {
     public static final int NEON_EDGES = 1;
     public static final int COLOR_FILTER = 2;
     public static final int MOTION_BLUR = 3;
+    private static Context sContext;
     private final String TAG = "ArtService";
     private Messenger mCallbackMessenger;
     private TransformCallback mTransformCallback = new TransformCallback();
+
+    public static Context getContext(){
+        return sContext;
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        sContext = getContext().getApplicationContext();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        sContext = null;
+    }
 
     private Handler mRequestHandler = new Handler() {
         @Override
