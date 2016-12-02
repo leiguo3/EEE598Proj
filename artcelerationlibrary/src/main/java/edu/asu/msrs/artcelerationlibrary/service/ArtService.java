@@ -44,7 +44,7 @@ public class ArtService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        sContext = getContext().getApplicationContext();
+        sContext = getApplicationContext();
     }
 
     @Override

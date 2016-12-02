@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory;
 
 import edu.asu.msrs.artcelerationlibrary.R;
 import edu.asu.msrs.artcelerationlibrary.service.ArtService;
+import edu.asu.msrs.artcelerationlibrary.utils.ShareMemUtil;
 import edu.asu.msrs.artcelerationlibrary.utils.Utils;
 
 /**
@@ -67,6 +68,10 @@ public class Transform {
             final String mCharId = "char%d";
             // Bitmap characters resource Ids.
             final Bitmap[] charBitmaps = new Bitmap[charCount];
+            // The width of ascii image in pixels
+            int asciiWidth = 0;
+            // The Height of ascii image in pixels
+            int asciiHeight = 0;
             // We use ARGB_8888 to create Bitmaps, each pixel take 32 bits
             BitmapFactory.Options opts = new BitmapFactory.Options();
             Resources res = context.getResources();
@@ -77,12 +82,16 @@ public class Transform {
                 int resId = Utils.getResId(resName, R.drawable.class);
                 Bitmap bmp = BitmapFactory.decodeResource(res, resId, opts);
                 charBitmaps[i] = bmp;
+                if(asciiWidth == 0){
+                    asciiWidth = bmp.getWidth();
+                    asciiHeight = bmp.getHeight();
+                }
             }
             // TODO: Now we have 36 Bitmap objects in the array of 'charBitmaps'
             // TODO: We can get their pixels with ShareMemUtil.getBytes(bmp) which will give us a byte array of pixel
 
             // TODO: return the transformed byte array of pixels
-            return null;
+            return asciiArtImpl(pixels, imgW, imgH, charCount, asciiWidth, asciiHeight, charBitmaps);
         } else {
             // Return the original pixels if can't get the context here
             // This won't happen if this method is called in the Service.
@@ -90,7 +99,13 @@ public class Transform {
         }
     }
 
-
+    /**
+     * Convert a 1D pixels array to a 2D pixels array
+     * @param pixels
+     * @param width -- number of mono-color pixels in each row of the image, equals to image_width * 4
+     * @param imgH
+     * @return
+     */
     private static byte[][] convert1DTo2D(byte[] pixels, int width, int imgH) {
         byte[][] result = new byte[width][imgH];
         for (int x = 0; x < width; x++) {
@@ -305,6 +320,132 @@ public class Transform {
             }
         }
         return result;
+    }
+
+
+    /**
+     *
+     * @param pixels -- the byte array which contains all the mono-color byte color values
+     *               in the original image to be transformed.
+     * @param imgH -- in pixels, on pixel = 4 bytes
+     * @param imgW -- in pixels, on pixel = 4 bytes
+     * @param asciiCount -- the number of ascii character images
+     * @param asciiWidth -- in pixels, on pixel = 4 bytes
+     * @param asciiHeight -- in pixels, on pixel = 4 bytes
+     * @param charBitmaps -- the array contains bitmaps for all the ascii character images.
+     * @return
+     */
+    public static byte[] asciiArtImpl(byte[] pixels, int imgH, int imgW, int asciiCount, int asciiWidth, int asciiHeight, Bitmap[] charBitmaps){
+        // Main method for asciiArt transform
+
+        // TODO: we should have a one dimensional byte array as the return value
+        // TODO: the size of the return array should be the same as the original one
+        byte[] correctResult = new byte[pixels.length];
+
+        byte[][] results = new byte[imgH][imgW]; // Store output monocolor pixel array
+        byte[][] redArray = copyOneColorFromOrigin(pixels, imgW, imgH, 0);
+        byte[][] greenArray = copyOneColorFromOrigin(pixels, imgW, imgH, 1);
+        byte[][] blueArray = copyOneColorFromOrigin(pixels, imgW, imgH, 2);
+
+        byte whiteValue = (byte) 255;
+        double scalingFactor = 15/255;
+        int colorAvg;
+        // Array should be initialized here, or you won't get any data from the 'loadAsciiList' function
+        // One pixels is represented with 4 bytes (r, g, b, a), so the second dimension of the following array is asciiWidth * 4
+        byte[][][] asciiImageList = new byte[asciiCount][asciiWidth * 4][asciiHeight];
+        double[] meanAscii = new double[asciiCount];
+
+        //Number of blocks in each direction
+        int imgRepCountX = (int) Math.floor(imgW/asciiWidth);
+        int imgRepCountY = (int) Math.floor(imgH/asciiHeight);
+
+
+        // Avarage R,G,B channel of original image
+        for (int i=0;i<imgRepCountY*asciiHeight;i++){
+            for (int j=0;j<imgRepCountX*asciiWidth;j++){
+                // j is the index of rows and i is the index of columns
+                colorAvg = ((redArray[j][i]&0xFF)+(greenArray[j][i]&0xFF)+(blueArray[j][i]&0xFF))/3;
+                results[i][j]= (byte)(colorAvg*scalingFactor);
+            }
+        }
+
+        // set edge to white.
+        for (int i=imgRepCountY*asciiHeight;i<imgH; i++){
+            for (int j=imgRepCountX*asciiWidth;j<imgW;j++){
+                results[i][j] = whiteValue;
+            }
+        }
+
+        // Load ascii image list
+        loadAsciiList(asciiImageList,meanAscii, charBitmaps);
+
+
+        // Find closest ascii image and make replacement.
+        int imageIndex = 0;
+        double blockAvgValue = 0;
+        for (int i=0; i< imgRepCountX;i++){
+            for (int j=0; j< imgRepCountY; j++) {
+                blockAvgValue = blockAvg(results,i,i+asciiWidth-1,j,j+asciiHeight-1);
+                imageIndex = sortMinImage(meanAscii,blockAvgValue);
+
+                // Copy selected ascii image into results
+                for (int k=0;k<asciiWidth;k++){
+                    for (int l=0;l<asciiHeight;l++){
+                        results[i+k][j+l] = asciiImageList[imageIndex][k][l];
+                    }
+                }
+
+            }
+        }
+
+        // TODO: fill return array with correct (r, g, b, a) mono-color byte values
+
+        return correctResult;
+    }
+
+
+    private static double blockAvg(byte[][] img, int indexX1, int indexX2, int indexY1, int indexY2){
+        // Calculate avergae pixel value of a block in image
+        double pixelAvg = 0;
+        for(int i=indexX1;i<indexX2;i++){
+            for(int j=indexY1; j<indexY2;j++) {
+                pixelAvg = pixelAvg + img[i][j];
+            }
+        }
+
+        return pixelAvg/Math.abs((indexX2-indexX1+1)*(indexY1-indexY2+1));
+    }
+
+    private static void loadAsciiList(byte[][][] asciiImageList,double[] meanAscii, Bitmap[] charBitmaps){
+        //load mono-color image list
+
+        // Initialize the list of ascii image array -> asciiImageList.
+        final int asciiCount = charBitmaps.length;
+        for (int i = 0; i< asciiCount; i++) {
+            Bitmap bmp = charBitmaps[i];
+            byte[] pixels = ShareMemUtil.getBytes(bmp);
+            int width = bmp.getWidth() * 4;
+            int height = bmp.getHeight();
+            byte[][] twoDPixels = convert1DTo2D(pixels, width, height);
+            asciiImageList[i] = twoDPixels;
+            // Initialize avarage pixel value of the image list -> meanAscii
+            meanAscii[i] = blockAvg(twoDPixels, 0, width, 0, height);
+        }
+
+    }
+
+    private static int sortMinImage(double[] distanceArray, double blockValue){
+        // Select the right ascii Image index for original image block replacement
+        int minIndex = 0;
+        double distance = Math.abs(distanceArray[0] - blockValue);
+        for(int i=1; i < distanceArray.length; i++){
+            if(Math.abs(distanceArray[i] - blockValue)<distance) {
+                distance = Math.abs(distanceArray[i]);
+                // TODO: [remove comment] the indices are start from 0, not 1
+                minIndex=i;
+            }
+        }
+        return minIndex;
     }
 
 }
