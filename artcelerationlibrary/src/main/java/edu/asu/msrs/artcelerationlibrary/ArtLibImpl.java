@@ -45,7 +45,7 @@ public class ArtLibImpl {
 
     public TransformTest[] getTestsArray() {
         TransformTest[] transforms = new TransformTest[4];
-        transforms[0] = new TransformTest(0, new int[]{5}, new float[]{3.0f});
+        transforms[0] = new TransformTest(0, new int[]{10}, new float[]{6.0f});
         transforms[1] = new TransformTest(1, new int[]{11, 22, 33}, new float[]{0.3f, 0.2f, 0.3f});
         transforms[2] = new TransformTest(2,
                 new int[]{33, 25, 208, 72, 231, 140, 233, 162, 41,

@@ -25,7 +25,7 @@ public class Transform {
     // During test, native code consumes about 30 milliseconds, while java code consumes 100 milliseconds more.
     private static native byte[] nativeColorFilter(byte[] pixels, int[] intArgs);
     private static native byte[] nativeMotionBlur(byte[] pixels, int[] intArgs, int imgW, int imgH);
-    private static native byte[] nativeGaussianBlur(byte[] pixels, int imgW, int imgH, int[] intArgs, float[] floatArgs);
+    private static native  byte[] nativeGaussianBlur(byte[] pixels, int imgW, int imgH, int[] intArgs, float[] floatArgs);
 
     public static byte[] colorFilter(byte[] pixels, int[] intArgs) {
         return nativeColorFilter(pixels, intArgs);
@@ -335,20 +335,24 @@ public class Transform {
      * @param charBitmaps -- the array contains bitmaps for all the ascii character images.
      * @return
      */
-    public static byte[] asciiArtImpl(byte[] pixels, int imgH, int imgW, int asciiCount, int asciiWidth, int asciiHeight, Bitmap[] charBitmaps){
+    public static byte[] asciiArtImpl(byte[] pixels, int imgW, int imgH, int asciiCount, int asciiWidth, int asciiHeight, Bitmap[] charBitmaps){
         // Main method for asciiArt transform
 
         // TODO: we should have a one dimensional byte array as the return value
         // TODO: the size of the return array should be the same as the original one
         byte[] correctResult = new byte[pixels.length];
 
-        byte[][] results = new byte[imgH][imgW]; // Store output monocolor pixel array
+       // byte[][] results = new byte[imgW][imgH]; // Store output monocolor pixel array
+        byte[][] results = convert1DTo2D(pixels,imgW,imgH);
+        byte[][] outputImage2D = new byte[imgW*4][imgH];
+
+        /*
         byte[][] redArray = copyOneColorFromOrigin(pixels, imgW, imgH, 0);
         byte[][] greenArray = copyOneColorFromOrigin(pixels, imgW, imgH, 1);
         byte[][] blueArray = copyOneColorFromOrigin(pixels, imgW, imgH, 2);
-
-        byte whiteValue = (byte) 255;
-        double scalingFactor = 15/255;
+        */
+        byte whiteValue = (byte) 15;
+        double scalingFactor = 1;
         int colorAvg;
         // Array should be initialized here, or you won't get any data from the 'loadAsciiList' function
         // One pixels is represented with 4 bytes (r, g, b, a), so the second dimension of the following array is asciiWidth * 4
@@ -359,20 +363,20 @@ public class Transform {
         int imgRepCountX = (int) Math.floor(imgW/asciiWidth);
         int imgRepCountY = (int) Math.floor(imgH/asciiHeight);
 
-
+/*
         // Avarage R,G,B channel of original image
-        for (int i=0;i<imgRepCountY*asciiHeight;i++){
-            for (int j=0;j<imgRepCountX*asciiWidth;j++){
+        for (int i=0;i<imgRepCountX*asciiWidth;i++){
+            for (int j=0;j<imgRepCountY*asciiHeight;j++){
                 // j is the index of rows and i is the index of columns
-                colorAvg = ((redArray[j][i]&0xFF)+(greenArray[j][i]&0xFF)+(blueArray[j][i]&0xFF))/3;
+                colorAvg = ((redArray[i][j]&0xFF)+(greenArray[i][j]&0xFF)+(blueArray[i][j]&0xFF))/3;
                 results[i][j]= (byte)(colorAvg*scalingFactor);
             }
         }
-
-        // set edge to white.
-        for (int i=imgRepCountY*asciiHeight;i<imgH; i++){
-            for (int j=imgRepCountX*asciiWidth;j<imgW;j++){
-                results[i][j] = whiteValue;
+*/
+        // set edge of outputImage to white.
+        for (int i=imgRepCountX*asciiWidth*4;i<imgW*4; i++){
+            for (int j=imgRepCountY*asciiHeight;j<imgH;j++){
+                outputImage2D[i][j] = whiteValue;
             }
         }
 
@@ -391,7 +395,10 @@ public class Transform {
                 // Copy selected ascii image into results
                 for (int k=0;k<asciiWidth;k++){
                     for (int l=0;l<asciiHeight;l++){
-                        results[i+k][j+l] = asciiImageList[imageIndex][k][l];
+                        outputImage2D[i*asciiWidth*4+k*4][j*asciiHeight+l] = asciiImageList[imageIndex][k*4][l];
+                        outputImage2D[i*asciiWidth*4+k*4+1][j*asciiHeight+l] = asciiImageList[imageIndex][k*4+1][l];
+                        outputImage2D[i*asciiWidth*4+k*4+2][j*asciiHeight+l] = asciiImageList[imageIndex][k*4+2][l];
+                        outputImage2D[i*asciiWidth*4+k*4+3][j*asciiHeight+l] = asciiImageList[imageIndex][k*4+3][l];
                     }
                 }
 
@@ -400,6 +407,7 @@ public class Transform {
 
         // TODO: fill return array with correct (r, g, b, a) mono-color byte values
 
+        convert2DTo1D(outputImage2D,correctResult,imgW*4,imgH);
         return correctResult;
     }
 
@@ -407,13 +415,15 @@ public class Transform {
     private static double blockAvg(byte[][] img, int indexX1, int indexX2, int indexY1, int indexY2){
         // Calculate avergae pixel value of a block in image
         double pixelAvg = 0;
+
+        // i and j are pixel indices
         for(int i=indexX1;i<indexX2;i++){
             for(int j=indexY1; j<indexY2;j++) {
-                pixelAvg = pixelAvg + img[i][j];
+                pixelAvg = pixelAvg + img[4*i][j]+img[4*i+1][j]+img[4*i+2][j];
             }
         }
 
-        return pixelAvg/Math.abs((indexX2-indexX1+1)*(indexY1-indexY2+1));
+        return pixelAvg/Math.abs(3*(indexX2-indexX1+1)*(indexY1-indexY2+1));
     }
 
     private static void loadAsciiList(byte[][][] asciiImageList,double[] meanAscii, Bitmap[] charBitmaps){
@@ -429,9 +439,8 @@ public class Transform {
             byte[][] twoDPixels = convert1DTo2D(pixels, width, height);
             asciiImageList[i] = twoDPixels;
             // Initialize avarage pixel value of the image list -> meanAscii
-            meanAscii[i] = blockAvg(twoDPixels, 0, width, 0, height);
+            meanAscii[i] = blockAvg(twoDPixels, 0, width/4, 0, height);
         }
-
     }
 
     private static int sortMinImage(double[] distanceArray, double blockValue){
@@ -449,3 +458,5 @@ public class Transform {
     }
 
 }
+
+
