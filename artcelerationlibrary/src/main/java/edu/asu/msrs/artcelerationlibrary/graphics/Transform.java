@@ -246,7 +246,7 @@ public class Transform {
 
     private static byte[][] copyOneColorFromOrigin(byte[] pixels, int imgW, int imgH, int offset) {
         // offset: r = 0, g = 1, b = 2, a = 3;
-        byte[][] result = new byte[imgW][imgH];
+        byte[][] result = new byte[imgW*4][imgH];
         for (int x = 0; x < imgW; x++) {
             for (int y = 0; y < imgH; y++) {
                 int index = (y * imgW + x) * 4 + offset;
@@ -343,7 +343,7 @@ public class Transform {
         byte[] correctResult = new byte[pixels.length];
 
        // byte[][] results = new byte[imgW][imgH]; // Store output monocolor pixel array
-        byte[][] results = convert1DTo2D(pixels,imgW,imgH);
+        byte[][] results = convert1DTo2D(pixels,imgW*4,imgH);
         byte[][] outputImage2D = new byte[imgW*4][imgH];
 
         /*
@@ -389,7 +389,7 @@ public class Transform {
         double blockAvgValue = 0;
         for (int i=0; i< imgRepCountX;i++){
             for (int j=0; j< imgRepCountY; j++) {
-                blockAvgValue = blockAvg(results,i,i+asciiWidth-1,j,j+asciiHeight-1);
+                blockAvgValue = blockAvg(results,i*asciiWidth,(i+1)*asciiWidth-1,j*asciiHeight,(j+1)*asciiHeight-1);
                 imageIndex = sortMinImage(meanAscii,blockAvgValue);
 
                 // Copy selected ascii image into results
@@ -457,6 +457,16 @@ public class Transform {
         return minIndex;
     }
 
+    /*
+    public static byte[] tiltShift(byte[] pixels, int imgW, int imgH, int[] progBlur, float sigma1, float sigma2){
+        // Implementation of Tilt-Shift
+
+        byte[][] outputImage = new byte[4*imgW][imgH];
+
+
+        return convert2DTo1D(outputImage,4*imgW,imgH);
+    }
+    */
 }
 
 
