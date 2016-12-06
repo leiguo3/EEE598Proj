@@ -12,11 +12,8 @@
         android:supportsRtl="true">
         <service
             android:name=".service.ArtService"
+            android:isolatedProcess="true"
             android:process=":art_library" />
-
-        <!-- For Test-->
-        <activity android:name=".test.TestActivity"
-            android:process=":art_library"></activity>
     </application>
 
 </manifest>

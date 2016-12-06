@@ -14,16 +14,27 @@ import edu.asu.msrs.artcelerationlibrary.tasks.schedule.FIFOTaskExecutor;
 
 public class Executor {
 
+    /**
+     * execute the transform tasks
+     * @param request
+     * @param callback
+     */
     public static void performTransform(Request request, ITaskCallback callback) {
         TransformTask task = new TransformTask(request, callback);
         execute(task);
     }
 
+    /**
+     * execute the create request tasks
+     */
     public static void createRequest(Bitmap bmp, int index, int[] intArgs, float[] floatArgs, ITaskCallback callback){
         RequestTask task = new RequestTask(bmp, index, intArgs, floatArgs, callback);
         execute(task);
     }
 
+    /**
+     * execute the create bitmap tasks
+     */
     public static void createBitmap(Result result, ITaskCallback callback){
         ResultTask task = new ResultTask(result, callback);
         execute(task);

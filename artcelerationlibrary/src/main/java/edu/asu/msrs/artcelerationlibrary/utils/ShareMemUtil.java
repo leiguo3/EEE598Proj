@@ -28,9 +28,6 @@ public class ShareMemUtil {
         try {
             ByteBuffer buffer = getBytesFromPfd(pfd);
             Bitmap bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-            // TODO: remove log code
-            Log.e("ShareMemUtil", "decode Bitmap width : height: "+width + " : " + height);
-            Log.e("ShareMemUtil", "decode Bitmap buffer size: "+ buffer.array().length);
             bmp.copyPixelsFromBuffer(buffer);
             return bmp;
         } catch (IOException e) {
@@ -53,16 +50,7 @@ public class ShareMemUtil {
         return bb;
     }
 
-    // TODO: remove useless function
-    public static void writeBytesToPfd(ParcelFileDescriptor pfd, byte[] data) throws IOException {
-//        FileOutputStream fos = new FileOutputStream(pfd.getFileDescriptor());
-//        fos.write(data, 0, data.length);
-//        fos.flush();
-//        fos.close();
-    }
-
     public static ParcelFileDescriptor writeDataToAshm(byte[] data) throws IOException {
-        // TODO: reuse the block of shared memory which is used to write the request data.
         MemoryFile mf = new MemoryFile("ashm", data.length);
         mf.writeBytes(data, 0, 0, data.length);
         return MemoryFileUtil.getParcelFileDescriptor(mf);

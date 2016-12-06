@@ -31,7 +31,6 @@ public class TransformTask extends FIFOTask {
 
     @Override
     protected void runOnBackgroundThread() {
-        Log.d(TAG, "runOnBackgroundThread is called!");
         if(mRequest != null){
             try{
                 handleRequest(mRequest);
@@ -45,30 +44,20 @@ public class TransformTask extends FIFOTask {
 
     // This function run on background thread.
     private void handleRequest(Request request) throws IOException{
-        Log.d(TAG, "Request type: " + request.getTransformType());
         byte[] pixels =ShareMemUtil.getBytesFromPfd(request.getParcelFileDescriptor()).array();
         byte[] newPixels = null;
-        // TODO: remove performance test code.
         switch (request.getTransformType()){
             case ArtService.GAUSSIAN_BLUR:
-                long st = System.currentTimeMillis();
                 newPixels = Transform.gaussianBlur(pixels, request.getWidth(), request.getHeight(), request.getIntArgs(), request.getFloatArgs());
-                Log.e(TAG, "Gaussian blur, consume: " + (System.currentTimeMillis() - st));
                 break;
             case ArtService.ASCII_ART:
-                // TODO: add transform
-                // Do nothing
                 newPixels = Transform.asciiArt(pixels, request.getWidth(), request.getHeight());
                 break;
             case ArtService.COLOR_FILTER:
-                long startTime = System.currentTimeMillis();
                 newPixels = Transform.colorFilter(pixels, request.getIntArgs());
-                Log.e(TAG, "C++ color filter finish, consume: " + (System.currentTimeMillis() - startTime));
                 break;
             case ArtService.MOTION_BLUR:
-                startTime = System.currentTimeMillis();
                 newPixels = Transform.motionBlur(pixels, request.getWidth(), request.getHeight(), request.getIntArgs());
-                Log.e(TAG, "Motion blur finish, consume: " + (System.currentTimeMillis() - startTime));
                 break;
         }
         ParcelFileDescriptor pfd = ShareMemUtil.writeDataToAshm(newPixels);

@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
 
 /**
+ * The parent class for Request and Result. Stores common data for those two classes.
  * Created by Lei on 11/5/2016.
  */
 
@@ -11,6 +12,9 @@ public class Base {
     private static final String KEY_PARCEL_FILE_DESCRIPTOR = "k_p_f_d";
     private static final String KEY_WIDTH = "k_width";
     private static final String KEY_HEIGHT = "k_height";
+    /**
+     * The File descriptor for a block of Ashm
+     */
     private ParcelFileDescriptor mPfd;
     /**
      * The Bitmap width. If the file is not a Bitmap, don't care about this value.

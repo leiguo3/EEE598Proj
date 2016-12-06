@@ -3,7 +3,6 @@ package edu.asu.msrs.artcelerationlibrary.service;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -18,8 +17,6 @@ import edu.asu.msrs.artcelerationlibrary.data.Result;
 import edu.asu.msrs.artcelerationlibrary.tasks.Executor;
 import edu.asu.msrs.artcelerationlibrary.tasks.ITaskCallback;
 import edu.asu.msrs.artcelerationlibrary.tasks.TransformTask;
-import edu.asu.msrs.artcelerationlibrary.test.TestActivity;
-import edu.asu.msrs.artcelerationlibrary.utils.ShareMemUtil;
 
 /**
  * Created by Lei on 11/3/2016.
@@ -104,21 +101,6 @@ public class ArtService extends Service {
         }
     }
 
-    private Bitmap parseBitmap(Request request){
-        Bitmap bmp = ShareMemUtil.createBitmapFromPfd(request.getParcelFileDescriptor(), request.getWidth(), request.getHeight());
-        //TODO: Remove Test Code
-        if(bmp == null){
-            Log.e(TAG, "Bitmap parsed is null!");
-            return null;
-        }
-        int byteCount = bmp.getByteCount();
-        Log.e(TAG, "parse bitmap byte count: " + byteCount);
-        Log.d(TAG, "bmp width " + bmp.getWidth() + "  , height: " + bmp.getHeight());
-        TestActivity.sBitmap = bmp;
-        TestActivity.startTestActivity(getApplicationContext());
-        return bmp;
-    }
-
     private void handleRequest(Request request){
         Executor.performTransform(request, mTransformCallback);
     }
@@ -128,8 +110,6 @@ public class ArtService extends Service {
         public void onTaskFinished(TransformTask task) {
             Request request = task.getRequest();
             sendCallback(request);
-            // TODO: remove test code
-//            parseBitmap(request);
         }
     }
 

@@ -30,7 +30,9 @@ import edu.asu.msrs.artcelerationlibrary.utils.ParamsVerifyUtil;
 public class ArtLibImpl {
     private final String TAG = "ArtLibImpl";
     private TransformHandler mArtlistener;
-    private String[] mTransforms = {"Gaussian Blur", "Ascii Art", "Color Filter", "Motion Blur"};
+    private String[] mTransforms = {"Gaussian Blur", "Ascii Art", "Color Filter", "Motion Blur",
+            // We did not do the following algorithms
+            "Tilt Shift-Not done", "Unsharp Mask-Not done", "Sobel Edge Filter-not done", "Neon edges-Not done", "Pencil Sketch-Not done"};
     private boolean mBound = false;
     private Context mContext;
     private Messenger mRequestMessenger;
@@ -45,14 +47,20 @@ public class ArtLibImpl {
     }
 
     public TransformTest[] getTestsArray() {
-        TransformTest[] transforms = new TransformTest[4];
+        TransformTest[] transforms = new TransformTest[9];
         transforms[0] = new TransformTest(0, new int[]{10}, new float[]{6.0f});
         transforms[1] = new TransformTest(1, new int[]{11, 22, 33}, new float[]{0.3f, 0.2f, 0.3f});
         transforms[2] = new TransformTest(2,
                 new int[]{33, 25, 208, 72, 231, 140, 233, 162, 41,
                         37, 245, 124, 247, 205, 248, 245, 108, 10, 203, 168, 234,
                         217, 245, 239,}, new float[]{0.5f, 0.6f, 0.3f});
-        transforms[3] = new TransformTest(3, new int[]{0, 10}, new float[]{});
+        transforms[3] = new TransformTest(3, new int[]{0, 10}, new float[]{0.5f});
+        // We did not do the following algorithms
+        transforms[4] = new TransformTest(4, new int[]{0, 10}, new float[]{0.5f});
+        transforms[5] = new TransformTest(5, new int[]{0, 10}, new float[]{0.5f});
+        transforms[6] = new TransformTest(6, new int[]{0, 10}, new float[]{0.5f});
+        transforms[7] = new TransformTest(7, new int[]{0, 10}, new float[]{0.5f});
+        transforms[8] = new TransformTest(8, new int[]{0, 10}, new float[]{0.5f});
         return transforms;
     }
 
@@ -67,11 +75,25 @@ public class ArtLibImpl {
         if (index < 0 || index > mTransforms.length - 1) {
             return false;
         }
+        // If the algorithm is in the assignment but we did not implement it, we directly callback with the original image
+        if(directlyCallback(img, index)){
+            // We do not verify more params here.
+            return true;
+        }
         if (!verifyArgs(index, intArgs, floatArgs)) {
             return false;
         }
         sendRequest(img, index, intArgs, floatArgs);
         return true;
+    }
+
+    // We did not finish those algorithms whose index is larger than 3, callback with the original image.
+    private boolean directlyCallback(Bitmap img, int index){
+        if(index > 3){
+            callbackClient(img);
+            return true;
+        }
+        return false;
     }
 
     private boolean verifyArgs(int type, int[] intArgs, float[] floatArgs) {
