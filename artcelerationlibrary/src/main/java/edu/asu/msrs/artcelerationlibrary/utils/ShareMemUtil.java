@@ -13,6 +13,7 @@ import java.nio.ByteBuffer;
 
 /**
  * Created by Lei on 11/5/2016.
+ * Utility functions used to access ashm. - YZ
  */
 
 public class ShareMemUtil {

@@ -1,5 +1,6 @@
 //
 // Created by Lei on 11/10/2016.
+// This is the implementation of Color filter, Motion Blur and Guassian Blur in NDK. - YZ
 //
 #include <jni.h>
 #include <string>

@@ -24,6 +24,7 @@ import edu.asu.msrs.artcelerationlibrary.utils.ParamsVerifyUtil;
 
 /**
  * Created by Lei on 11/3/2016.
+ * This is the implementation of ArtLib. - YZ
  */
 
 public class ArtLibImpl {

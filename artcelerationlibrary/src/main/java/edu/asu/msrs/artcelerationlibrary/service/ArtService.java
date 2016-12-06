@@ -23,6 +23,7 @@ import edu.asu.msrs.artcelerationlibrary.utils.ShareMemUtil;
 
 /**
  * Created by Lei on 11/3/2016.
+ * The service which carries transform task - YZ
  */
 
 public class ArtService extends Service {

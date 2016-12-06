@@ -5,6 +5,8 @@ import android.graphics.Bitmap;
 
 /**
  * Created by rlikamwa on 10/2/2016.
+ * This is the abstract class of image processing library which provide interface
+ * between client and service. - YZ
  */
 
 public class ArtLib {

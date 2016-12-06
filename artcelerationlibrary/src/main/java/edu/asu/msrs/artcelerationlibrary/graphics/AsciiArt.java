@@ -10,6 +10,7 @@ import edu.asu.msrs.artcelerationlibrary.utils.Utils;
 
 /**
  * Created by Lei on 11/29/2016.
+ * Draft for reading Ascii letter images. But it was not used in our final version - YZ
  */
 
 public class AsciiArt {

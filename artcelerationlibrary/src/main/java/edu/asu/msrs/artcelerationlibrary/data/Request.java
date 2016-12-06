@@ -4,7 +4,10 @@ import android.os.Bundle;
 
 /**
  * Created by Lei on 11/5/2016.
+ * Request Data: used to pass transform type and args from Activity to Service
  */
+
+
 
 public class Request extends Base {
     private static final String KEY_INT_ARGS = "k_int_args";

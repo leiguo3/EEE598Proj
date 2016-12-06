@@ -1,5 +1,7 @@
 //
 // Created by Lei on 11/11/2016.
+// This is the header file which contains function prototypes
+// of Color filter, Motion Blur and Guassian Blur in NDK. - YZ
 //
 
 #ifndef EEE598PROJ_ASSN2_TRANSFORM_LIB_H

@@ -13,6 +13,7 @@ import edu.asu.msrs.artcelerationlibrary.graphics.Transform;
 
 /**
  * Created by Lei on 11/6/2016.
+ * This is a subclass of FIFO Task which does the transform task. - YZ
  */
 
 public class TransformTask extends FIFOTask {

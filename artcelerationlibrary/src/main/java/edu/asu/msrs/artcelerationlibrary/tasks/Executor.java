@@ -9,6 +9,7 @@ import edu.asu.msrs.artcelerationlibrary.tasks.schedule.FIFOTaskExecutor;
 
 /**
  * Created by Lei on 11/6/2016.
+ * This class is used to execute FIFO task conveniently. - YZ
  */
 
 public class Executor {
