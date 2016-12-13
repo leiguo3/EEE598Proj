@@ -4,3 +4,5 @@ EEE 598: Mobile Systems Architecture, Course Assignment II
 Release Date: 2016 Oct 24
 Mid-progress Review Date: 2016 Nov 7
 Full Review Date: 2016 Nov 30
+
+To create image filter with Vulkan
